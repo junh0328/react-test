@@ -34,6 +34,9 @@ describe('회원가입 테스트', () => {
     // Error message should not be displayed
     const errorMsg = screen.queryByText('비밀번호가 일치하지 않습니다.');
     expect(errorMsg).not.toBeInTheDocument();
+
+    const successMsg = screen.queryByText('회원가입이 완료되었습니다.');
+    expect(successMsg).toBeInTheDocument();
   });
 
   test('비밀번호 불일치 여부 테스트', () => {

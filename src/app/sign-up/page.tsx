@@ -9,6 +9,7 @@ const SignUp = () => {
   const [passWordConfirm, setPassWordConfirm] = useState('');
 
   const [errorMsg, setErrorMsg] = useState('');
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -17,6 +18,8 @@ const SignUp = () => {
       setErrorMsg('비밀번호가 일치하지 않습니다.');
       return;
     }
+
+    setIsSuccess(true);
   };
 
   const isDisabled = useMemo(() => {
@@ -60,6 +63,7 @@ const SignUp = () => {
       </Flex>
 
       <CustomSpan>{errorMsg}</CustomSpan>
+      {isSuccess && <CustomSpan>회원가입이 완료되었습니다.</CustomSpan>}
 
       <div>
         <button type='submit' disabled={isDisabled}>
