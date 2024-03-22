@@ -4,12 +4,15 @@ import SignUp from '../src/app/sign-up/page';
 
 describe('회원가입 테스트', () => {
   test('회원가입 페이지 각 라벨 렌더링', () => {
+    // given
     render(<SignUp />);
 
+    // when
     const inputIdElement = screen.getByLabelText('Id');
     const inputPwElement = screen.getByLabelText('passWord');
     const inputPwConfirmElement = screen.getByLabelText('passWordConfirm');
 
+    // then
     expect(inputIdElement).toBeInTheDocument();
     expect(inputPwElement).toBeInTheDocument();
     expect(inputPwConfirmElement).toBeInTheDocument();
