@@ -34,12 +34,10 @@ const SignIn = () => {
         setIsSuccess(true);
       } catch (e: unknown) {
         if (isAxiosError(e)) {
-          console.error('is axios error');
           setErrorMsg(e?.response?.data?.message || 'something went wrong.');
           return;
         }
 
-        console.error('error occurred in onsubmit event, not the axios error');
         setErrorMsg('알 수 없는 에러가 발생했습니다.');
       }
     },

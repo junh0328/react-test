@@ -1,4 +1,3 @@
-// FILEPATH: /Users/eazel/junhee/junhee-test/src/app/sign-in/page.test.tsx
 import SignIn from '@/app/sign-in/page';
 import { render, fireEvent, waitFor, screen } from '@testing-library/react';
 import { defaultAxios } from '../config/axiosConfig';
@@ -20,8 +19,22 @@ describe('SignIn', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
+
   it('renders without crashing', () => {
+    // given
     render(<SignIn />);
+
+    // when
+    const idInputNode = screen.getByLabelText('Id');
+    const passWordInputNode = screen.getByLabelText('passWord');
+    const loginButtonNode = screen.getByText('login');
+    const resetButtonNode = screen.getByText('reset');
+
+    // then
+    expect(idInputNode).toBeTruthy();
+    expect(passWordInputNode).toBeTruthy();
+    expect(loginButtonNode).toBeTruthy();
+    expect(resetButtonNode).toBeTruthy();
   });
 
   describe('Ensure signIn params correct', () => {
@@ -29,11 +42,19 @@ describe('SignIn', () => {
       const email = 'bowow@eazel.net';
       const password = 'eazel1!';
 
-      const { getByLabelText, getByText } = render(<SignIn />);
-      fireEvent.change(getByLabelText('Id'), { target: { value: email } });
-      fireEvent.change(getByLabelText('passWord'), { target: { value: password } });
-      fireEvent.click(getByText('login'));
+      // given
+      render(<SignIn />);
 
+      const idInputNode = screen.getByLabelText('Id');
+      const passWordInputNode = screen.getByLabelText('passWord');
+      const loginButtonNode = screen.getByText('login');
+
+      // when
+      fireEvent.change(idInputNode, { target: { value: email } });
+      fireEvent.change(passWordInputNode, { target: { value: password } });
+      fireEvent.click(loginButtonNode);
+
+      // then
       await waitFor(() =>
         expect(defaultAxios.post).toHaveBeenCalledWith('/v1/users/sign-in', {
           email,
@@ -44,7 +65,7 @@ describe('SignIn', () => {
     });
   });
 
-  describe('Check 로그인 왼료되었습니다', () => {
+  describe('Check response "로그인 왼료되었습니다."', () => {
     beforeAll(() => {
       defaultAxios.post = jest.fn().mockResolvedValue({});
     });
@@ -52,10 +73,17 @@ describe('SignIn', () => {
     it('should show success 로그인이 완료되었습니다', async () => {
       const email = 'anyemail';
       const password = 'anypassword';
-      const { getByLabelText, getByText } = render(<SignIn />);
-      fireEvent.change(getByLabelText('Id'), { target: { value: email } });
-      fireEvent.change(getByLabelText('passWord'), { target: { value: password } });
-      fireEvent.click(getByText('login'));
+
+      render(<SignIn />);
+
+      const idInputNode = screen.getByLabelText('Id');
+      const passWordInputNode = screen.getByLabelText('passWord');
+      const loginButtonNode = screen.getByText('login');
+
+      fireEvent.change(idInputNode, { target: { value: email } });
+      fireEvent.change(passWordInputNode, { target: { value: password } });
+      fireEvent.click(loginButtonNode);
+
       await waitFor(() =>
         expect(defaultAxios.post).toHaveBeenCalledWith('/v1/users/sign-in', {
           email,
@@ -68,8 +96,9 @@ describe('SignIn', () => {
     });
   });
 
-  describe('Check response error 로그인이 실패되었습니다', () => {
+  describe('Check response "로그인이 실패되었습니다"', () => {
     const errorMessage = '로그인이 실패되었습니다';
+
     beforeAll(() => {
       const axiosError: AxiosError = new AxiosError(errorMessage, '401', undefined, undefined, {
         data: { message: errorMessage },
@@ -86,11 +115,16 @@ describe('SignIn', () => {
     it(`should show success ${errorMessage}`, async () => {
       const email = 'anyemail';
       const password = 'anypassword';
-      const { getByLabelText, getByText } = render(<SignIn />);
 
-      fireEvent.change(getByLabelText('Id'), { target: { value: email } });
-      fireEvent.change(getByLabelText('passWord'), { target: { value: password } });
-      fireEvent.click(getByText('login'));
+      render(<SignIn />);
+
+      const idInputNode = screen.getByLabelText('Id');
+      const passWordInputNode = screen.getByLabelText('passWord');
+      const loginButtonNode = screen.getByText('login');
+
+      fireEvent.change(idInputNode, { target: { value: email } });
+      fireEvent.change(passWordInputNode, { target: { value: password } });
+      fireEvent.click(loginButtonNode);
 
       await waitFor(() =>
         expect(defaultAxios.post).toHaveBeenCalledWith('/v1/users/sign-in', {
@@ -104,7 +138,7 @@ describe('SignIn', () => {
     });
   });
 
-  describe('Check response something went wrong.', () => {
+  describe('Check response "something went wrong."', () => {
     const errorMessage = 'something went wrong.';
     it(`should display ${errorMessage}`, async () => {
       const error: AxiosError = {
@@ -117,18 +151,22 @@ describe('SignIn', () => {
 
       (defaultAxios.post as jest.Mock).mockRejectedValue(error);
 
-      const { getByLabelText, getByText } = render(<SignIn />);
+      render(<SignIn />);
 
-      fireEvent.change(getByLabelText('Id'), { target: { value: 'testId' } });
-      fireEvent.change(getByLabelText('passWord'), { target: { value: 'testPassword' } });
-      fireEvent.click(getByText('login'));
+      const idInputNode = screen.getByLabelText('Id');
+      const passWordInputNode = screen.getByLabelText('passWord');
+      const loginButtonNode = screen.getByText('login');
+
+      fireEvent.change(idInputNode, { target: { value: 'testId' } });
+      fireEvent.change(passWordInputNode, { target: { value: 'testPassword' } });
+      fireEvent.click(loginButtonNode);
 
       const data = expect(await screen.findByText(errorMessage));
       expect(data).toBeTruthy();
     });
   });
 
-  describe('Check response 알 수 없는 에러가 발생했습니다.', () => {
+  describe('Check response "알 수 없는 에러가 발생했습니다."', () => {
     const errorMessage = '알 수 없는 에러가 발생했습니다.';
     it(`should display ${errorMessage}`, async () => {
       (defaultAxios.post as jest.Mock).mockImplementation(() => {
