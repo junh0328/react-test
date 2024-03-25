@@ -3,16 +3,6 @@ import { render, fireEvent, waitFor, screen } from '@testing-library/react';
 import { defaultAxios } from '../config/axiosConfig';
 import { AxiosError } from 'axios';
 
-// no featured exhibttionsn case -> api.exhibitions.featured.mockResolvedValue([]);
-// 1 featured exhibttionsn case -> api.exhibitions.featured.mockResolvedValue([<ExhibitionPreview>]);
-
-/**
- * beforeAll/beforeEach - runs before describe()
- * afterAll/afterEach - runs after describe()
- * beforeEach -> runs before each child describe()
- * afterEach -> runs after each child describe()
- * it -> has to pass all expect() -> success ELSE fail
- */
 jest.mock('../config/axiosConfig.ts');
 
 describe('SignIn', () => {
@@ -20,45 +10,53 @@ describe('SignIn', () => {
     jest.clearAllMocks();
   });
 
-  it('renders without crashing', () => {
+  const testData = {
+    validEmail: 'bowow@eazel.net',
+    validPassword: 'eazel1!',
+    invalidEmail: 'invalidEmail@test.com',
+    invalidPassword: 'invalidPassword',
+  };
+
+  const renderSignInComponent = () => {
     // given
     render(<SignIn />);
 
     // when
     const idInputNode = screen.getByLabelText('Id');
-    const passWordInputNode = screen.getByLabelText('passWord');
+    const passwordInputNode = screen.getByLabelText('passWord');
     const loginButtonNode = screen.getByText('login');
     const resetButtonNode = screen.getByText('reset');
 
+    return { idInputNode, passwordInputNode, loginButtonNode, resetButtonNode };
+  };
+
+  it('renders without crashing', () => {
+    // given, when
+    const { idInputNode, loginButtonNode, passwordInputNode, resetButtonNode } =
+      renderSignInComponent();
+
     // then
     expect(idInputNode).toBeTruthy();
-    expect(passWordInputNode).toBeTruthy();
+    expect(passwordInputNode).toBeTruthy();
     expect(loginButtonNode).toBeTruthy();
     expect(resetButtonNode).toBeTruthy();
   });
 
   describe('Ensure signIn params correct', () => {
     it('should call sign in with axios and return success', async () => {
-      const email = 'bowow@eazel.net';
-      const password = 'eazel1!';
+      // given, when
+      const { idInputNode, loginButtonNode, passwordInputNode } = renderSignInComponent();
 
-      // given
-      render(<SignIn />);
-
-      const idInputNode = screen.getByLabelText('Id');
-      const passWordInputNode = screen.getByLabelText('passWord');
-      const loginButtonNode = screen.getByText('login');
-
-      // when
-      fireEvent.change(idInputNode, { target: { value: email } });
-      fireEvent.change(passWordInputNode, { target: { value: password } });
+      // when (more condition)
+      fireEvent.change(idInputNode, { target: { value: testData.validEmail } });
+      fireEvent.change(passwordInputNode, { target: { value: testData.validPassword } });
       fireEvent.click(loginButtonNode);
 
       // then
       await waitFor(() =>
         expect(defaultAxios.post).toHaveBeenCalledWith('/v1/users/sign-in', {
-          email,
-          password,
+          email: testData.validEmail,
+          password: testData.validPassword,
         })
       );
       expect(defaultAxios.post).toHaveBeenCalledTimes(1);
@@ -71,23 +69,16 @@ describe('SignIn', () => {
     });
 
     it('should show success 로그인이 완료되었습니다', async () => {
-      const email = 'anyemail';
-      const password = 'anypassword';
+      const { idInputNode, passwordInputNode, loginButtonNode } = renderSignInComponent();
 
-      render(<SignIn />);
-
-      const idInputNode = screen.getByLabelText('Id');
-      const passWordInputNode = screen.getByLabelText('passWord');
-      const loginButtonNode = screen.getByText('login');
-
-      fireEvent.change(idInputNode, { target: { value: email } });
-      fireEvent.change(passWordInputNode, { target: { value: password } });
+      fireEvent.change(idInputNode, { target: { value: testData.validEmail } });
+      fireEvent.change(passwordInputNode, { target: { value: testData.validPassword } });
       fireEvent.click(loginButtonNode);
 
       await waitFor(() =>
         expect(defaultAxios.post).toHaveBeenCalledWith('/v1/users/sign-in', {
-          email,
-          password,
+          email: testData.validEmail,
+          password: testData.validPassword,
         })
       );
       const succesMsg = await screen.findByText('로그인이 완료되었습니다.');
@@ -113,23 +104,19 @@ describe('SignIn', () => {
     });
 
     it(`should show success ${errorMessage}`, async () => {
-      const email = 'anyemail';
-      const password = 'anypassword';
+      // given
+      const { idInputNode, passwordInputNode, loginButtonNode } = renderSignInComponent();
 
-      render(<SignIn />);
-
-      const idInputNode = screen.getByLabelText('Id');
-      const passWordInputNode = screen.getByLabelText('passWord');
-      const loginButtonNode = screen.getByText('login');
-
-      fireEvent.change(idInputNode, { target: { value: email } });
-      fireEvent.change(passWordInputNode, { target: { value: password } });
+      // when
+      fireEvent.change(idInputNode, { target: { value: testData.invalidEmail } });
+      fireEvent.change(passwordInputNode, { target: { value: testData.invalidPassword } });
       fireEvent.click(loginButtonNode);
 
+      // then
       await waitFor(() =>
         expect(defaultAxios.post).toHaveBeenCalledWith('/v1/users/sign-in', {
-          email,
-          password,
+          email: testData.invalidEmail,
+          password: testData.invalidPassword,
         })
       );
 
@@ -151,16 +138,15 @@ describe('SignIn', () => {
 
       (defaultAxios.post as jest.Mock).mockRejectedValue(error);
 
-      render(<SignIn />);
+      // given
+      const { idInputNode, passwordInputNode, loginButtonNode } = renderSignInComponent();
 
-      const idInputNode = screen.getByLabelText('Id');
-      const passWordInputNode = screen.getByLabelText('passWord');
-      const loginButtonNode = screen.getByText('login');
-
-      fireEvent.change(idInputNode, { target: { value: 'testId' } });
-      fireEvent.change(passWordInputNode, { target: { value: 'testPassword' } });
+      // when
+      fireEvent.change(idInputNode, { target: { value: testData.validEmail } });
+      fireEvent.change(passwordInputNode, { target: { value: testData.invalidPassword } });
       fireEvent.click(loginButtonNode);
 
+      // then
       const data = expect(await screen.findByText(errorMessage));
       expect(data).toBeTruthy();
     });
@@ -173,11 +159,11 @@ describe('SignIn', () => {
         throw new Error('Unknown Error');
       });
 
-      const { getByLabelText, getByText } = render(<SignIn />);
+      const { idInputNode, passwordInputNode, loginButtonNode } = renderSignInComponent();
 
-      fireEvent.change(getByLabelText('Id'), { target: { value: 'testId' } });
-      fireEvent.change(getByLabelText('passWord'), { target: { value: 'testPassword' } });
-      fireEvent.click(getByText('login'));
+      fireEvent.change(idInputNode, { target: { value: testData.invalidEmail } });
+      fireEvent.change(passwordInputNode, { target: { value: testData.invalidPassword } });
+      fireEvent.click(loginButtonNode);
 
       const data = expect(await screen.findByText(errorMessage));
       expect(data).toBeTruthy();
